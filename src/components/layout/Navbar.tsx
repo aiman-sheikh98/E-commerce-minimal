@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Menu, X, Search, TShirt, Home as HomeIcon } from 'lucide-react';
+import { ShoppingBag, Menu, X, Search, Shirt, Home as HomeIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -27,7 +27,7 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Home', path: '/' },
-    { name: 'Clothing', path: '/?category=clothing', icon: TShirt },
+    { name: 'Clothing', path: '/?category=clothing', icon: Shirt },
     { name: 'Home', path: '/?category=home', icon: HomeIcon },
     { name: 'Bags', path: '/?category=bags' },
     { name: 'Accessories', path: '/?category=accessories' },
