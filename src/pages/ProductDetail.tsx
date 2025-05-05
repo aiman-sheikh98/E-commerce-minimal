@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -18,11 +18,24 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState(product?.colors[0] || '');
   const [selectedSize, setSelectedSize] = useState(product?.sizes[0] || '');
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
+  useEffect(() => {
+    // Reset image index when product changes
+    setCurrentImageIndex(0);
+  }, [id]);
+
   if (!product) {
     navigate('/');
     return null;
   }
+
+  const handleColorChange = (color: string) => {
+    setSelectedColor(color);
+    // When color changes, switch to the first image
+    // In a real app, you might have color-specific images
+    setCurrentImageIndex(0);
+  };
   
   const handleAddToCart = () => {
     addToCart(product, quantity, selectedColor, selectedSize);
@@ -38,13 +51,17 @@ const ProductDetail = () => {
     setQuantity(quantity + 1);
   };
 
+  const selectImage = (index: number) => {
+    setCurrentImageIndex(index);
+  };
+
   return (
     <div className="container py-8">
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         <div className="space-y-4">
           <div className="aspect-square bg-secondary">
             <img
-              src={product.images[0]}
+              src={product.images[currentImageIndex]}
               alt={product.name}
               className="h-full w-full object-cover"
             />
@@ -52,7 +69,11 @@ const ProductDetail = () => {
           {product.images.length > 1 && (
             <div className="grid grid-cols-4 gap-2">
               {product.images.map((image, idx) => (
-                <div key={idx} className="aspect-square bg-secondary">
+                <div 
+                  key={idx} 
+                  className={`aspect-square bg-secondary cursor-pointer border-2 ${idx === currentImageIndex ? 'border-primary' : 'border-transparent'}`}
+                  onClick={() => selectImage(idx)}
+                >
                   <img
                     src={image}
                     alt={`${product.name} - Image ${idx + 1}`}
@@ -76,7 +97,7 @@ const ProductDetail = () => {
               <h3 className="font-medium">Color</h3>
               <RadioGroup
                 value={selectedColor}
-                onValueChange={setSelectedColor}
+                onValueChange={handleColorChange}
                 className="flex flex-wrap gap-2"
               >
                 {product.colors.map((color) => (
