@@ -1,24 +1,36 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ShoppingBag, Menu, X, Search } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ShoppingBag, Menu, X, Search, TShirt, Home as HomeIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Input } from '@/components/ui/input';
 
 const Navbar = () => {
   const { totalItems, setIsCartOpen } = useCart();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/?search=${encodeURIComponent(searchQuery.trim())}`);
+      setIsMobileMenuOpen(false);
+    }
+  };
+
   const navLinks = [
     { name: 'Home', path: '/' },
-    { name: 'Shop', path: '/' },
-    { name: 'About', path: '/about' },
-    { name: 'Contact', path: '/contact' },
+    { name: 'Clothing', path: '/?category=clothing', icon: TShirt },
+    { name: 'Home', path: '/?category=home', icon: HomeIcon },
+    { name: 'Bags', path: '/?category=bags' },
+    { name: 'Accessories', path: '/?category=accessories' },
   ];
 
   return (
@@ -42,7 +54,7 @@ const Navbar = () => {
         <nav className="hidden md:flex md:gap-6">
           {navLinks.map((link) => (
             <Link
-              key={link.name}
+              key={link.name + link.path}
               to={link.path}
               className="text-sm font-medium hover:text-primary/80"
             >
@@ -55,9 +67,20 @@ const Navbar = () => {
         {isMobileMenuOpen && (
           <div className="fixed inset-0 top-16 z-50 grid h-[calc(100vh-4rem)] grid-flow-row auto-rows-max overflow-auto bg-background p-6 md:hidden">
             <div className="flex flex-col space-y-4">
+              <form onSubmit={handleSearch} className="mb-4">
+                <div className="flex gap-2">
+                  <Input
+                    type="search"
+                    placeholder="Search products..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  <Button type="submit">Search</Button>
+                </div>
+              </form>
               {navLinks.map((link) => (
                 <Link
-                  key={link.name}
+                  key={link.name + link.path}
                   to={link.path}
                   className="text-base font-medium hover:text-primary/80"
                   onClick={toggleMobileMenu}
@@ -71,11 +94,18 @@ const Navbar = () => {
 
         {/* Right navigation items */}
         <div className="flex items-center gap-4">
-          <Link to="/search" className="hidden sm:block">
-            <Button variant="ghost" size="icon">
+          <form onSubmit={handleSearch} className="hidden sm:flex sm:items-center sm:gap-2">
+            <Input
+              type="search"
+              placeholder="Search products..."
+              className="w-[200px] lg:w-[300px]"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <Button type="submit" variant="ghost" size="icon">
               <Search size={20} />
             </Button>
-          </Link>
+          </form>
 
           <div className="relative">
             <Button
