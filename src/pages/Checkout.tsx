@@ -10,6 +10,10 @@ const Checkout = () => {
   const { items, subtotal } = useCart();
   const navigate = useNavigate();
   
+  const handleCheckoutSuccess = () => {
+    navigate('/orders');
+  };
+  
   return (
     <div className="container py-8">
       <div className="mb-6">
@@ -23,7 +27,7 @@ const Checkout = () => {
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <CheckoutForm onSuccess={() => navigate('/orders')} />
+          <CheckoutForm onSuccess={handleCheckoutSuccess} />
         </div>
         <div className="lg:col-span-1">
           <div className="sticky top-20 rounded-md border p-4">

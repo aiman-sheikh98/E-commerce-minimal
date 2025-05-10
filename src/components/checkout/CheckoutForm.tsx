@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,8 +7,11 @@ import { Separator } from '@/components/ui/separator';
 import { useCart } from '@/context/CartContext';
 import { toast } from '@/components/ui/use-toast';
 
-const CheckoutForm: React.FC = () => {
-  const navigate = useNavigate();
+interface CheckoutFormProps {
+  onSuccess?: () => void;
+}
+
+const CheckoutForm: React.FC<CheckoutFormProps> = ({ onSuccess }) => {
   const { items, subtotal, clearCart } = useCart();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -50,15 +52,16 @@ const CheckoutForm: React.FC = () => {
       // Clear the cart
       clearCart();
       
-      // Navigate to order tracking page with a fake order ID
-      navigate('/order-tracking/ORD-12345');
+      // Call the onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
       
       setIsSubmitting(false);
     }, 1500);
   };
 
   if (items.length === 0) {
-    navigate('/');
     return null;
   }
 
