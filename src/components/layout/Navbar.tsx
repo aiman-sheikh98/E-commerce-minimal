@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { ShoppingBag, Menu, X, Search, Shirt, Home as HomeIcon, Bell, Heart, Backpack, TShirt } from 'lucide-react';
+import { ShoppingBag, Menu, X, Search, Shirt, Home as HomeIcon, Bell, Heart, Backpack } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
 import { useNotifications } from '@/context/NotificationContext';
@@ -34,7 +34,7 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Home', path: '/' },
-    { name: 'T-Shirts', path: '/?category=tshirts', icon: TShirt },
+    { name: 'T-Shirts', path: '/?category=tshirts', icon: Shirt },
     { name: 'Shirts', path: '/?category=shirts', icon: Shirt },
     { name: 'Jeans', path: '/?category=jeans' },
     { name: 'Bags', path: '/?category=bags', icon: Backpack },
