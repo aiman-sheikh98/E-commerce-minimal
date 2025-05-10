@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/use-toast';
 import PaymentButton from './PaymentButton';
 
@@ -21,6 +22,7 @@ interface PhonePeCheckoutProps {
 
 const PhonePeCheckout = ({ shippingAddress, total, onSuccess }: PhonePeCheckoutProps) => {
   const { items, clearCart } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [orderId, setOrderId] = useState<string | null>(null);
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
@@ -31,10 +33,8 @@ const PhonePeCheckout = ({ shippingAddress, total, onSuccess }: PhonePeCheckoutP
       setIsCreatingOrder(true);
       
       try {
-        // First, check if user is authenticated
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session?.user) {
+        // Check if user is authenticated
+        if (!user) {
           toast({
             variant: "destructive",
             title: "Authentication Required",
@@ -48,7 +48,7 @@ const PhonePeCheckout = ({ shippingAddress, total, onSuccess }: PhonePeCheckoutP
         const { data: orderData, error: orderError } = await supabase
           .from('orders')
           .insert({
-            user_id: session.user.id,
+            user_id: user.id,
             amount: total,
             shipping_address: shippingAddress,
             status: 'pending'
@@ -93,7 +93,7 @@ const PhonePeCheckout = ({ shippingAddress, total, onSuccess }: PhonePeCheckoutP
     if (!orderId && shippingAddress && total > 0) {
       createOrder();
     }
-  }, [shippingAddress, total, items, navigate, orderId]);
+  }, [shippingAddress, total, items, navigate, orderId, user]);
 
   return (
     <div className="space-y-4 mt-6">

@@ -1,128 +1,166 @@
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Check, X, Clock, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 import { PaymentStatusResponse } from '@/types/order';
+import { toast } from '@/components/ui/use-toast';
+import { useCart } from '@/context/CartContext';
 
 const PaymentResult = () => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const [status, setStatus] = useState<'loading' | 'success' | 'failure'>('loading');
-  const [message, setMessage] = useState('');
-  
-  const orderId = searchParams.get('orderId');
+  const transactionId = searchParams.get('transactionId');
   const merchantTransactionId = searchParams.get('merchantTransactionId');
-  
+  const [status, setStatus] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { clearCart } = useCart();
+
   useEffect(() => {
     const checkPaymentStatus = async () => {
       if (!merchantTransactionId) {
-        // If we don't have a transaction ID, maybe we're navigating directly
-        // Try to get it from the order
-        if (orderId) {
-          try {
-            const { data: orders } = await supabase
-              .from('orders')
-              .select('payment_id')
-              .eq('id', orderId)
-              .limit(1);
-              
-            if (orders && orders.length > 0 && orders[0].payment_id) {
-              const transactionId = orders[0].payment_id;
-              await verifyPayment(transactionId);
-            } else {
-              setStatus('failure');
-              setMessage('No payment information found for this order');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase.functions.invoke<PaymentStatusResponse>('check-payment-status', {
+          body: {
+            merchantTransactionId
+          }
+        });
+
+        if (error) throw error;
+
+        if (data?.success && data.data?.state) {
+          setStatus(data.data.state);
+
+          // If payment is successful, clear the cart
+          if (data.data.state === 'COMPLETED') {
+            clearCart();
+
+            // Update the order status in the database
+            if (user) {
+              await supabase
+                .from('orders')
+                .update({
+                  status: 'paid',
+                  payment_id: data.data.transactionId,
+                })
+                .eq('id', merchantTransactionId);
             }
-          } catch (error) {
-            console.error('Error fetching order:', error);
-            setStatus('failure');
-            setMessage('Unable to verify payment status');
           }
         } else {
-          setStatus('failure');
-          setMessage('Missing order information');
-        }
-      } else {
-        // We have a transaction ID directly from the URL
-        await verifyPayment(merchantTransactionId);
-      }
-    };
-    
-    const verifyPayment = async (transactionId: string) => {
-      try {
-        // Call the check-payment-status edge function
-        const { data, error } = await supabase.functions.invoke<PaymentStatusResponse>('check-payment-status', {
-          body: { merchantTransactionId: transactionId }
-        });
-        
-        if (error) {
-          throw new Error(error.message);
-        }
-        
-        if (data?.success && data?.data?.state === 'COMPLETED') {
-          setStatus('success');
-          setMessage('Your payment was successful! Your order is now being processed.');
-        } else {
-          setStatus('failure');
-          setMessage(data?.message || 'Payment verification failed');
+          throw new Error(data?.message || 'Could not verify payment');
         }
       } catch (error) {
-        console.error('Payment verification error:', error);
-        setStatus('failure');
-        setMessage(error.message || 'There was a problem verifying your payment');
+        console.error('Error checking payment status:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Could not verify payment status",
+        });
+        setStatus('UNKNOWN');
+      } finally {
+        setIsLoading(false);
       }
     };
-    
+
     checkPaymentStatus();
-  }, [orderId, merchantTransactionId]);
-  
-  if (status === 'loading') {
+  }, [merchantTransactionId, user, clearCart]);
+
+  const getStatusDisplay = () => {
+    if (isLoading) {
+      return (
+        <div className="flex flex-col items-center py-8">
+          <Clock className="w-16 h-16 text-muted-foreground animate-pulse mb-4" />
+          <h2 className="text-2xl font-medium mb-2">Verifying Payment</h2>
+          <p className="text-muted-foreground text-center">
+            Please wait while we verify your payment...
+          </p>
+        </div>
+      );
+    }
+
+    if (status === 'COMPLETED') {
+      return (
+        <div className="flex flex-col items-center py-8">
+          <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
+            <Check className="w-8 h-8 text-green-600" />
+          </div>
+          <h2 className="text-2xl font-medium mb-2">Payment Successful</h2>
+          <p className="text-muted-foreground text-center mb-6">
+            Your order has been placed and will be processed shortly.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button onClick={() => navigate('/orders')}>
+              View Order
+            </Button>
+            <Button variant="outline" asChild>
+              <Link to="/">Continue Shopping</Link>
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
     return (
-      <div className="container max-w-md py-16 text-center">
-        <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
-        <h1 className="mt-6 text-2xl font-medium">Verifying Your Payment</h1>
-        <p className="mt-2 text-muted-foreground">
-          Please wait while we verify your payment status...
+      <div className="flex flex-col items-center py-8">
+        <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
+          <X className="w-8 h-8 text-red-600" />
+        </div>
+        <h2 className="text-2xl font-medium mb-2">Payment Failed</h2>
+        <p className="text-muted-foreground text-center mb-6">
+          {status === 'PAYMENT_DECLINED' 
+            ? 'Your payment was declined. Please try again with a different payment method.'
+            : 'There was an issue processing your payment. Please try again.'
+          }
         </p>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Button onClick={() => navigate('/checkout')}>
+            Try Again
+          </Button>
+          <Button variant="outline" asChild>
+            <Link to="/cart">Return to Cart</Link>
+          </Button>
+        </div>
       </div>
     );
-  }
+  };
 
   return (
-    <div className="container max-w-md py-16 text-center">
-      {status === 'success' ? (
-        <CheckCircle className="mx-auto h-16 w-16 text-green-500" />
-      ) : (
-        <XCircle className="mx-auto h-16 w-16 text-destructive" />
+    <div className="container max-w-3xl py-8">
+      <Card>
+        <CardContent className="p-6">
+          {getStatusDisplay()}
+        </CardContent>
+      </Card>
+
+      {status === 'COMPLETED' && (
+        <div className="mt-8">
+          <h3 className="text-lg font-medium mb-4">Payment Details</h3>
+          <Card>
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Transaction ID:</span>
+                  <span>{transactionId || 'N/A'}</span>
+                </div>
+                <Separator />
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Order ID:</span>
+                  <span>{merchantTransactionId || 'N/A'}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
-      
-      <h1 className="mt-6 text-2xl font-medium">
-        {status === 'success' ? 'Payment Successful!' : 'Payment Failed'}
-      </h1>
-      
-      <p className="mt-4 text-muted-foreground">{message}</p>
-      
-      <div className="mt-8 space-y-4">
-        {status === 'success' && (
-          <Link to="/orders">
-            <Button className="w-full">View Your Orders</Button>
-          </Link>
-        )}
-        
-        {status === 'failure' && orderId && (
-          <Link to={`/checkout?orderId=${orderId}`}>
-            <Button className="w-full">Try Again</Button>
-          </Link>
-        )}
-        
-        <Link to="/">
-          <Button variant="outline" className="w-full">
-            Continue Shopping
-          </Button>
-        </Link>
-      </div>
     </div>
   );
 };
