@@ -1,5 +1,5 @@
 
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -8,6 +8,7 @@ import { useCart } from '@/context/CartContext';
 
 const Checkout = () => {
   const { items, subtotal } = useCart();
+  const navigate = useNavigate();
   
   return (
     <div className="container py-8">
@@ -22,7 +23,7 @@ const Checkout = () => {
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <CheckoutForm />
+          <CheckoutForm onSuccess={() => navigate('/orders')} />
         </div>
         <div className="lg:col-span-1">
           <div className="sticky top-20 rounded-md border p-4">

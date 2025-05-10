@@ -1,4 +1,3 @@
-
 export interface Product {
   id: string;
   name: string;
@@ -222,6 +221,62 @@ export const products: Product[] = [
     sizes: ["One Size"],
     featured: true,
   },
+  {
+    id: "16",
+    name: "Relaxed Fit Jeans",
+    price: 95,
+    description: "Comfortable relaxed fit jeans with a slightly tapered leg. Perfect for casual everyday wear.",
+    category: "jeans",
+    images: [
+      "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&q=80&w=500",
+      "https://images.unsplash.com/photo-1475178626620-a4d074967452?auto=format&fit=crop&q=80&w=500"
+    ],
+    colors: ["Medium Blue", "Dark Blue", "Black"],
+    sizes: ["28", "30", "32", "34", "36", "38"],
+    featured: false,
+  },
+  {
+    id: "17",
+    name: "Distressed Skinny Jeans",
+    price: 90,
+    description: "Modern skinny jeans with light distressing for an edgy look. Made with stretch denim for comfort.",
+    category: "jeans",
+    images: [
+      "https://images.unsplash.com/photo-1551854838-212c50b4c184?auto=format&fit=crop&q=80&w=500",
+      "https://images.unsplash.com/photo-1542574271-7f3b92e6c821?auto=format&fit=crop&q=80&w=500"
+    ],
+    colors: ["Light Wash", "Medium Wash", "Black"],
+    sizes: ["26", "28", "30", "32", "34"],
+    featured: true,
+  },
+  {
+    id: "18",
+    name: "High-Rise Wide Leg Jeans",
+    price: 105,
+    description: "Retro-inspired high-rise jeans with a wide leg silhouette. Crafted from premium rigid denim.",
+    category: "jeans",
+    images: [
+      "https://images.unsplash.com/photo-1584370848010-d7fe6bc767ec?auto=format&fit=crop&q=80&w=500",
+      "https://images.unsplash.com/photo-1555689502-c4b22d76c56f?auto=format&fit=crop&q=80&w=500"
+    ],
+    colors: ["Indigo", "Light Blue", "Black"],
+    sizes: ["24", "26", "28", "30", "32"],
+    featured: false,
+  },
+  {
+    id: "19",
+    name: "Vintage Wash Boyfriend Jeans",
+    price: 98,
+    description: "Relaxed boyfriend jeans with a vintage wash and subtle distressing. Features a comfortable mid-rise waist.",
+    category: "jeans",
+    images: [
+      "https://images.unsplash.com/photo-1560243563-062bfc001d68?auto=format&fit=crop&q=80&w=500",
+      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&q=80&w=500"
+    ],
+    colors: ["Vintage Blue", "Medium Blue", "Light Wash"],
+    sizes: ["24", "26", "28", "30", "32"],
+    featured: true,
+  }
 ];
 
 export const categories = [
@@ -245,7 +300,7 @@ export interface Order {
   id: string;
   items: CartItem[];
   total: number;
-  status: "processing" | "shipped" | "delivered";
+  status: "processing" | "shipped" | "delivered" | "cancelled";
   trackingNumber?: string;
   shippingAddress: {
     name: string;
