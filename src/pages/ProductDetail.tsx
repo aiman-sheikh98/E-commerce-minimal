@@ -1,17 +1,20 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useCart } from '@/context/CartContext';
+import { useWishlist } from '@/context/WishlistContext';
 import { products } from '@/data/products';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   
   const product = products.find(p => p.id === id);
   
@@ -39,6 +42,14 @@ const ProductDetail = () => {
   
   const handleAddToCart = () => {
     addToCart(product, quantity, selectedColor, selectedSize);
+  };
+
+  const toggleWishlist = () => {
+    if (isInWishlist(product.id)) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(product);
+    }
   };
 
   const decrementQuantity = () => {
@@ -198,9 +209,21 @@ const ProductDetail = () => {
             </div>
           </div>
           
-          <Button className="w-full" size="lg" onClick={handleAddToCart}>
-            Add to Cart
-          </Button>
+          <div className="flex gap-4">
+            <Button className="flex-1" size="lg" onClick={handleAddToCart}>
+              Add to Cart
+            </Button>
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={toggleWishlist}
+              className={isInWishlist(product.id) ? "bg-primary/10" : ""}
+            >
+              <Heart 
+                className={isInWishlist(product.id) ? "fill-primary text-primary" : ""} 
+              />
+            </Button>
+          </div>
           
           <Separator />
           

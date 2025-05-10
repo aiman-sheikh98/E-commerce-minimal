@@ -1,14 +1,21 @@
 
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Menu, X, Search, Shirt, Home as HomeIcon } from 'lucide-react';
+import { ShoppingBag, Menu, X, Search, Shirt, Home as HomeIcon, Bell, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
+import { useNotifications } from '@/context/NotificationContext';
+import { useWishlist } from '@/context/WishlistContext';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import NotificationPanel from '@/components/notifications/NotificationPanel';
+import WishlistPanel from '@/components/wishlist/WishlistPanel';
 
 const Navbar = () => {
   const { totalItems, setIsCartOpen } = useCart();
+  const { unreadCount } = useNotifications();
+  const { totalItems: wishlistItems } = useWishlist();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
@@ -94,34 +101,73 @@ const Navbar = () => {
 
         {/* Right navigation items */}
         <div className="flex items-center gap-4">
-          <form onSubmit={handleSearch} className="hidden sm:flex sm:items-center sm:gap-2">
-            <Input
-              type="search"
-              placeholder="Search products..."
-              className="w-[200px] lg:w-[300px]"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <Button type="submit" variant="ghost" size="icon">
-              <Search size={20} />
-            </Button>
-          </form>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Search size={20} />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-0" align="end">
+              <form onSubmit={handleSearch} className="flex">
+                <Input
+                  type="search"
+                  placeholder="Search products..."
+                  className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <Button type="submit" variant="ghost">
+                  <Search size={20} />
+                </Button>
+              </form>
+            </PopoverContent>
+          </Popover>
 
-          <div className="relative">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsCartOpen(true)}
-              aria-label={`Shopping cart with ${totalItems} items`}
-            >
-              <ShoppingBag size={20} />
-              {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                  {totalItems}
-                </span>
-              )}
-            </Button>
-          </div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Bell size={20} />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+                    {unreadCount}
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-0" align="end">
+              <NotificationPanel />
+            </PopoverContent>
+          </Popover>
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Heart size={20} />
+                {wishlistItems > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+                    {wishlistItems}
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-0" align="end">
+              <WishlistPanel />
+            </PopoverContent>
+          </Popover>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsCartOpen(true)}
+            aria-label={`Shopping cart with ${totalItems} items`}
+          >
+            <ShoppingBag size={20} />
+            {totalItems > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+                {totalItems}
+              </span>
+            )}
+          </Button>
         </div>
       </div>
     </header>

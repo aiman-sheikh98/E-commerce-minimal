@@ -1,70 +1,54 @@
 
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Heart } from 'lucide-react';
 import { Product } from '@/data/products';
-import { cn } from '@/lib/utils';
+import { useWishlist } from '@/context/WishlistContext';
 
 interface ProductCardProps {
   product: Product;
-  className?: string;
 }
 
-const ProductCard = ({ product, className }: ProductCardProps) => {
+const ProductCard = ({ product }: ProductCardProps) => {
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const [isHovered, setIsHovered] = useState(false);
+  
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (isInWishlist(product.id)) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(product);
+    }
+  };
+
   return (
     <Link
       to={`/product/${product.id}`}
-      className={cn(
-        "group block overflow-hidden product-card",
-        className
-      )}
+      className="group"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="product-image-container bg-secondary">
+      <div className="relative aspect-square overflow-hidden rounded-md bg-muted">
         <img
           src={product.images[0]}
           alt={product.name}
-          className="product-image"
-          loading="lazy"
+          className="h-full w-full object-cover transition-transform group-hover:scale-105"
         />
+        <button
+          onClick={handleWishlistToggle}
+          className="absolute right-2 top-2 rounded-full bg-background/80 p-1.5 text-foreground backdrop-blur-sm transition-colors hover:bg-background"
+        >
+          <Heart
+            className={`h-4 w-4 ${isInWishlist(product.id) ? 'fill-primary text-primary' : ''}`}
+          />
+        </button>
       </div>
-      <div className="mt-4 space-y-1">
-        <h3 className="text-sm font-medium">{product.name}</h3>
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">${product.price}</p>
-          <div className="flex gap-1">
-            {product.colors.slice(0, 3).map((color) => (
-              <span
-                key={color}
-                className="h-3 w-3 rounded-full border"
-                style={{
-                  backgroundColor:
-                    color === "White"
-                      ? "#fff"
-                      : color === "Black"
-                      ? "#000"
-                      : color === "Gray"
-                      ? "#888"
-                      : color === "Natural"
-                      ? "#f4efe7"
-                      : color === "Sage"
-                      ? "#cdd6cd"
-                      : color === "Cream"
-                      ? "#f9f5e9"
-                      : color === "Charcoal"
-                      ? "#36454f"
-                      : color === "Tan"
-                      ? "#d2b48c"
-                      : color === "Brown"
-                      ? "#964b00"
-                      : color === "Terracotta"
-                      ? "#e2725b"
-                      : "#ddd"
-                }}
-              />
-            ))}
-            {product.colors.length > 3 && (
-              <span className="text-xs text-muted-foreground">+{product.colors.length - 3}</span>
-            )}
-          </div>
-        </div>
+      <div className="mt-2">
+        <h3 className="font-medium">{product.name}</h3>
+        <p className="text-sm text-muted-foreground">${product.price}</p>
       </div>
     </Link>
   );

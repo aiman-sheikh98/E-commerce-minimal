@@ -5,6 +5,7 @@ import { products } from '@/data/products';
 import ProductGrid from '@/components/products/ProductGrid';
 import ProductFilters from '@/components/products/ProductFilters';
 import HeroBanner from '@/components/home/HeroBanner';
+import { DemoNotification } from '@/components/notifications/DemoNotification';
 
 const Index = () => {
   const location = useLocation();
@@ -29,6 +30,7 @@ const Index = () => {
 
   return (
     <div>
+      <DemoNotification />
       {!searchQuery && <HeroBanner />}
       
       <div className="container py-8 md:py-12">
