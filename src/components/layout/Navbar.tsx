@@ -1,14 +1,13 @@
 
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Menu, X, Search, Shirt, Home as HomeIcon, Bell, Heart } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { ShoppingBag, Menu, X, Search, Shirt, Home as HomeIcon, Bell, Heart, Backpack, TShirt } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWishlist } from '@/context/WishlistContext';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Input } from '@/components/ui/input';
 import NotificationPanel from '@/components/notifications/NotificationPanel';
 import WishlistPanel from '@/components/wishlist/WishlistPanel';
 
@@ -19,6 +18,7 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -34,11 +34,24 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Home', path: '/' },
-    { name: 'Clothing', path: '/?category=clothing', icon: Shirt },
-    { name: 'Home', path: '/?category=home', icon: HomeIcon },
-    { name: 'Bags', path: '/?category=bags' },
+    { name: 'T-Shirts', path: '/?category=tshirts', icon: TShirt },
+    { name: 'Shirts', path: '/?category=shirts', icon: Shirt },
+    { name: 'Jeans', path: '/?category=jeans' },
+    { name: 'Bags', path: '/?category=bags', icon: Backpack },
     { name: 'Accessories', path: '/?category=accessories' },
   ];
+
+  const isLinkActive = (path: string) => {
+    const queryParams = new URLSearchParams(location.search);
+    const categoryParam = queryParams.get('category');
+    
+    if (path === '/') return location.pathname === '/' && !categoryParam;
+    if (path.includes('category=')) {
+      const linkCategory = path.split('=')[1];
+      return categoryParam === linkCategory;
+    }
+    return location.pathname === path;
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-sm">
@@ -63,7 +76,11 @@ const Navbar = () => {
             <Link
               key={link.name + link.path}
               to={link.path}
-              className="text-sm font-medium hover:text-primary/80"
+              className={`text-sm font-medium transition-colors ${
+                isLinkActive(link.path) 
+                ? "text-primary font-semibold" 
+                : "hover:text-primary/80"
+              }`}
             >
               {link.name}
             </Link>
@@ -89,7 +106,11 @@ const Navbar = () => {
                 <Link
                   key={link.name + link.path}
                   to={link.path}
-                  className="text-base font-medium hover:text-primary/80"
+                  className={`text-base font-medium transition-colors ${
+                    isLinkActive(link.path) 
+                    ? "text-primary font-semibold" 
+                    : "hover:text-primary/80"
+                  }`}
                   onClick={toggleMobileMenu}
                 >
                   {link.name}

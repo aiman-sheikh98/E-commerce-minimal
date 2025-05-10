@@ -31,7 +31,7 @@ export const products: Product[] = [
     name: "Essential White T-Shirt",
     price: 35,
     description: "A premium cotton t-shirt with a relaxed fit. Ethically made and designed to last.",
-    category: "clothing",
+    category: "tshirts",
     images: [
       "https://images.unsplash.com/photo-1581655353564-df123a1eb820?auto=format&fit=crop&q=80&w=500", 
       "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&q=80&w=500"
@@ -124,11 +124,111 @@ export const products: Product[] = [
     sizes: ["One Size"],
     featured: true,
   },
+  {
+    id: "9",
+    name: "Classic Slim-Fit Jeans",
+    price: 85,
+    description: "Premium denim jeans with a classic slim fit. Made from sustainable cotton blend.",
+    category: "jeans",
+    images: [
+      "https://images.unsplash.com/photo-1604176424472-35819ce67081?auto=format&fit=crop&q=80&w=500",
+      "https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&q=80&w=500"
+    ],
+    colors: ["Blue", "Black", "Gray"],
+    sizes: ["28", "30", "32", "34", "36"],
+    featured: true,
+  },
+  {
+    id: "10",
+    name: "Straight-Cut Raw Denim Jeans",
+    price: 110,
+    description: "Raw denim jeans with a straight-cut silhouette. Features minimal detailing for a clean look.",
+    category: "jeans",
+    images: [
+      "https://images.unsplash.com/photo-1582552938357-32b906df40cb?auto=format&fit=crop&q=80&w=500",
+      "https://images.unsplash.com/photo-1598554747436-c9293d6a588f?auto=format&fit=crop&q=80&w=500"
+    ],
+    colors: ["Dark Blue", "Medium Wash", "Light Wash"],
+    sizes: ["28", "30", "32", "34", "36"],
+    featured: false,
+  },
+  {
+    id: "11",
+    name: "Oxford Button-Down Shirt",
+    price: 70,
+    description: "Classic oxford cotton button-down shirt. Perfect for both casual and formal occasions.",
+    category: "shirts",
+    images: [
+      "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&q=80&w=500",
+      "https://images.unsplash.com/photo-1598032895397-b9472444bf93?auto=format&fit=crop&q=80&w=500"
+    ],
+    colors: ["White", "Light Blue", "Pink"],
+    sizes: ["XS", "S", "M", "L", "XL"],
+    featured: true,
+  },
+  {
+    id: "12",
+    name: "Linen Summer Shirt",
+    price: 65,
+    description: "Lightweight linen shirt perfect for summer days. Features a relaxed fit and breathable fabric.",
+    category: "shirts",
+    images: [
+      "https://images.unsplash.com/photo-1564584217132-2271feaeb3c5?auto=format&fit=crop&q=80&w=500",
+      "https://images.unsplash.com/photo-1578932750356-5a15e1892b92?auto=format&fit=crop&q=80&w=500"
+    ],
+    colors: ["Natural", "Sage", "Light Blue"],
+    sizes: ["XS", "S", "M", "L", "XL"],
+    featured: false,
+  },
+  {
+    id: "13",
+    name: "Striped Cotton T-Shirt",
+    price: 35,
+    description: "Cotton t-shirt with classic stripe pattern. Features a comfortable fit and durable construction.",
+    category: "tshirts",
+    images: [
+      "https://images.unsplash.com/photo-1523381294911-8d3cead13475?auto=format&fit=crop&q=80&w=500",
+      "https://images.unsplash.com/photo-1562157873-818bc0726f68?auto=format&fit=crop&q=80&w=500"
+    ],
+    colors: ["Navy/White", "Black/White", "Red/Blue"],
+    sizes: ["XS", "S", "M", "L", "XL"],
+    featured: false,
+  },
+  {
+    id: "14",
+    name: "Modern Backpack",
+    price: 79,
+    description: "Minimalist backpack with laptop compartment and multiple pockets. Perfect for everyday use.",
+    category: "bags",
+    images: [
+      "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?auto=format&fit=crop&q=80&w=500",
+      "https://images.unsplash.com/photo-1491637639811-60e2756cc1c7?auto=format&fit=crop&q=80&w=500"
+    ],
+    colors: ["Black", "Navy", "Gray"],
+    sizes: ["One Size"],
+    featured: true,
+  },
+  {
+    id: "15",
+    name: "Leather Watch",
+    price: 120,
+    description: "Minimalist quartz watch with leather strap. Features a clean dial and Japanese movement.",
+    category: "accessories",
+    images: [
+      "https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?auto=format&fit=crop&q=80&w=500",
+      "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&q=80&w=500"
+    ],
+    colors: ["Black", "Brown", "Tan"],
+    sizes: ["One Size"],
+    featured: true,
+  },
 ];
 
 export const categories = [
   { name: "All", value: "all" },
-  { name: "Clothing", value: "clothing" },
+  { name: "T-Shirts", value: "tshirts" },
+  { name: "Shirts", value: "shirts" },
+  { name: "Jeans", value: "jeans" },
   { name: "Bags", value: "bags" },
   { name: "Home", value: "home" },
   { name: "Accessories", value: "accessories" },

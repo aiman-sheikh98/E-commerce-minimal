@@ -28,6 +28,13 @@ const Index = () => {
 
   const featuredProducts = products.filter(product => product.featured);
 
+  // Get category name for display
+  const getCategoryDisplayName = () => {
+    if (!categoryParam || categoryParam === 'all') return '';
+    const category = categoryParam.charAt(0).toUpperCase() + categoryParam.slice(1);
+    return category;
+  };
+
   return (
     <div>
       <DemoNotification />
@@ -45,7 +52,17 @@ const Index = () => {
           </div>
         )}
         
-        {!searchQuery && (
+        {categoryParam && categoryParam !== 'all' && !searchQuery && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-medium mb-2">{getCategoryDisplayName()}</h2>
+            <ProductGrid 
+              products={products} 
+              category={categoryParam}
+            />
+          </div>
+        )}
+        
+        {(!categoryParam || categoryParam === 'all') && !searchQuery && (
           <>
             <div className="mb-12 text-center">
               <h1 className="mb-3 text-4xl font-medium">Minimal Design, Maximum Quality</h1>
