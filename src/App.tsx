@@ -13,6 +13,7 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import OrderHistory from "./pages/OrderHistory";
 import OrderTracking from "./pages/OrderTracking";
+import PaymentResult from "./pages/PaymentResult";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
@@ -40,6 +41,7 @@ const App = () => (
                     <Route path="/orders" element={<OrderHistory />} />
                     <Route path="/order-tracking" element={<OrderTracking />} />
                     <Route path="/order-tracking/:id" element={<OrderTracking />} />
+                    <Route path="/payment-result" element={<PaymentResult />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </main>

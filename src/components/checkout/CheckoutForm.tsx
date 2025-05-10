@@ -1,264 +1,184 @@
-
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { useCart } from '@/context/CartContext';
+import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
 import { toast } from '@/components/ui/use-toast';
+import PhonePeCheckout from './PhonePeCheckout';
+
+const formSchema = z.object({
+  name: z.string().min(2, {
+    message: "Full name must be at least 2 characters.",
+  }),
+  address: z.string().min(5, {
+    message: "Address must be at least 5 characters.",
+  }),
+  city: z.string().min(2, {
+    message: "City must be at least 2 characters.",
+  }),
+  state: z.string().min(2, {
+    message: "State must be at least 2 characters.",
+  }),
+  zip: z.string().min(5, {
+    message: "Zip code must be at least 5 characters.",
+  }),
+  country: z.string().min(2, {
+    message: "Country must be at least 2 characters.",
+  }),
+});
 
 interface CheckoutFormProps {
   onSuccess?: () => void;
 }
 
-const CheckoutForm: React.FC<CheckoutFormProps> = ({ onSuccess }) => {
-  const { items, subtotal, clearCart } = useCart();
+const CheckoutForm = ({ onSuccess }: CheckoutFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: '',
-    cardNumber: '',
-    cardName: '',
-    cardExpiry: '',
-    cardCvc: '',
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      address: "",
+      city: "",
+      state: "",
+      zip: "",
+      country: "",
+    },
   });
-  
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
-    
-    // In a real app, you'd handle payment processing here
-    // For now, we're simulating a successful order
-    
-    setTimeout(() => {
+    try {
+      // Simulate a successful submission
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       toast({
-        title: "Order placed successfully!",
-        description: "You will receive a confirmation email shortly.",
+        title: "Success!",
+        description: "Your order has been placed.",
       });
-      
-      // Clear the cart
-      clearCart();
-      
-      // Call the onSuccess callback if provided
-      if (onSuccess) {
-        onSuccess();
-      }
-      
+      onSuccess?.();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Uh oh! Something went wrong.",
+        description: error.message,
+      });
+    } finally {
       setIsSubmitting(false);
-    }, 1500);
+    }
   };
-
-  if (items.length === 0) {
-    return null;
-  }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      <div className="space-y-4">
-        <h2 className="text-xl font-medium">Contact Information</h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="firstName">First Name</Label>
-            <Input
-              id="firstName"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="lastName">Last Name</Label>
-            <Input
-              id="lastName"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              required
-            />
-          </div>
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone</Label>
-            <Input
-              id="phone"
-              name="phone"
-              type="tel"
-              value={formData.phone}
-              onChange={handleChange}
-              required
-            />
-          </div>
-        </div>
-      </div>
-
-      <Separator />
-
-      <div className="space-y-4">
-        <h2 className="text-xl font-medium">Shipping Address</h2>
-        <div className="space-y-2">
-          <Label htmlFor="address">Address</Label>
-          <Input
-            id="address"
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Full Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="John Doe" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
             name="address"
-            value={formData.address}
-            onChange={handleChange}
-            required
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Address</FormLabel>
+                <FormControl>
+                  <Input placeholder="123 Main St" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
         </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="city">City</Label>
-            <Input
-              id="city"
-              name="city"
-              value={formData.city}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="state">State/Province</Label>
-            <Input
-              id="state"
-              name="state"
-              value={formData.state}
-              onChange={handleChange}
-              required
-            />
-          </div>
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="zipCode">ZIP/Postal Code</Label>
-            <Input
-              id="zipCode"
-              name="zipCode"
-              value={formData.zipCode}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="country">Country</Label>
-            <Input
-              id="country"
-              name="country"
-              value={formData.country}
-              onChange={handleChange}
-              required
-            />
-          </div>
-        </div>
-      </div>
-
-      <Separator />
-
-      <div className="space-y-4">
-        <h2 className="text-xl font-medium">Payment Information</h2>
-        <p className="text-sm text-muted-foreground">
-          This is just a demo. No real payment will be processed.
-        </p>
-        <div className="space-y-2">
-          <Label htmlFor="cardNumber">Card Number</Label>
-          <Input
-            id="cardNumber"
-            name="cardNumber"
-            placeholder="1234 5678 9012 3456"
-            value={formData.cardNumber}
-            onChange={handleChange}
-            required
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <FormField
+            control={form.control}
+            name="city"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>City</FormLabel>
+                <FormControl>
+                  <Input placeholder="New York" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="state"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>State</FormLabel>
+                <FormControl>
+                  <Input placeholder="NY" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="zip"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Zip Code</FormLabel>
+                <FormControl>
+                  <Input placeholder="10001" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
         </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="cardName">Name on Card</Label>
-            <Input
-              id="cardName"
-              name="cardName"
-              value={formData.cardName}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-2">
-              <Label htmlFor="cardExpiry">Expiry Date</Label>
-              <Input
-                id="cardExpiry"
-                name="cardExpiry"
-                placeholder="MM/YY"
-                value={formData.cardExpiry}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="cardCvc">CVC</Label>
-              <Input
-                id="cardCvc"
-                name="cardCvc"
-                placeholder="123"
-                value={formData.cardCvc}
-                onChange={handleChange}
-                required
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <Separator />
-
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <span>Subtotal</span>
-          <span>${subtotal.toFixed(2)}</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span>Shipping</span>
-          <span>$0.00</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span>Tax</span>
-          <span>${(subtotal * 0.1).toFixed(2)}</span>
-        </div>
-        <Separator />
-        <div className="flex items-center justify-between font-medium">
-          <span>Total</span>
-          <span>${(subtotal + subtotal * 0.1).toFixed(2)}</span>
-        </div>
-      </div>
-
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
-        {isSubmitting ? "Processing..." : "Place Order"}
-      </Button>
-    </form>
+        <FormField
+          control={form.control}
+          name="country"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Country</FormLabel>
+              <FormControl>
+                <Input placeholder="USA" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Submitting..." : "Submit"}
+        </Button>
+      </form>
+      <PhonePeCheckout 
+        shippingAddress={{
+          name: form.getValues("name"),
+          street: form.getValues("address"),
+          city: form.getValues("city"),
+          state: form.getValues("state"),
+          zip: form.getValues("zip"),
+          country: form.getValues("country"),
+        }}
+        total={100} // Replace with actual total from cart
+        onSuccess={onSuccess}
+      />
+    </Form>
   );
 };
 
