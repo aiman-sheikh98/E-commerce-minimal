@@ -10,35 +10,3 @@ export type ProfileRecord = Database['public']['Tables']['profiles']['Row'];
 export interface EnhancedOrder extends OrderRecord {
   items?: OrderItemRecord[];
 }
-
-// Interface for tracking response from PhonePe
-export interface PhonePeResponse {
-  success: boolean;
-  code: string;
-  message: string;
-  data?: {
-    merchantId?: string;
-    merchantTransactionId: string;
-    instrumentResponse?: {
-      type: string;
-      redirectInfo?: {
-        url: string;
-      };
-    };
-  };
-}
-
-// Interface for PhonePe payment status check
-export interface PaymentStatusResponse {
-  success: boolean;
-  code: string;
-  message: string;
-  data?: {
-    merchantId?: string;
-    merchantTransactionId: string;
-    transactionId?: string;
-    amount?: number;
-    state?: string;
-    responseCode?: string;
-  };
-}

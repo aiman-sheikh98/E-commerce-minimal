@@ -1,9 +1,9 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { toast } from '@/components/ui/use-toast';
-import PhonePeCheckout from './PhonePeCheckout';
+import Checkout from './Checkout';
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -79,7 +79,7 @@ const CheckoutForm = ({ onSuccess }: CheckoutFormProps) => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form className="space-y-8">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <FormField
             control={form.control}
@@ -162,22 +162,19 @@ const CheckoutForm = ({ onSuccess }: CheckoutFormProps) => {
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Submitting..." : "Submit"}
-        </Button>
+        <Checkout 
+          shippingAddress={{
+            name: form.getValues("name"),
+            street: form.getValues("address"),
+            city: form.getValues("city"),
+            state: form.getValues("state"),
+            zip: form.getValues("zip"),
+            country: form.getValues("country"),
+          }}
+          total={100} // Replace with actual total from cart
+          onSuccess={onSuccess}
+        />
       </form>
-      <PhonePeCheckout 
-        shippingAddress={{
-          name: form.getValues("name"),
-          street: form.getValues("address"),
-          city: form.getValues("city"),
-          state: form.getValues("state"),
-          zip: form.getValues("zip"),
-          country: form.getValues("country"),
-        }}
-        total={100} // Replace with actual total from cart
-        onSuccess={onSuccess}
-      />
     </Form>
   );
 };

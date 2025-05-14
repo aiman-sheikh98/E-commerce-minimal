@@ -5,89 +5,38 @@ import { Check, X, Clock, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
-import { PaymentStatusResponse } from '@/types/order';
 import { toast } from '@/components/ui/use-toast';
 import { useCart } from '@/context/CartContext';
 
 const PaymentResult = () => {
   const [searchParams] = useSearchParams();
-  const transactionId = searchParams.get('transactionId');
-  const merchantTransactionId = searchParams.get('merchantTransactionId');
-  const [status, setStatus] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const status = searchParams.get('status');
+  const orderId = searchParams.get('orderId');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { clearCart } = useCart();
 
   useEffect(() => {
-    const checkPaymentStatus = async () => {
-      if (!merchantTransactionId) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase.functions.invoke<PaymentStatusResponse>('check-payment-status', {
-          body: {
-            merchantTransactionId
-          }
-        });
-
-        if (error) throw error;
-
-        if (data?.success && data.data?.state) {
-          setStatus(data.data.state);
-
-          // If payment is successful, clear the cart
-          if (data.data.state === 'COMPLETED') {
-            clearCart();
-
-            // Update the order status in the database
-            if (user) {
-              await supabase
-                .from('orders')
-                .update({
-                  status: 'paid',
-                  payment_id: data.data.transactionId,
-                })
-                .eq('id', merchantTransactionId);
-            }
-          }
-        } else {
-          throw new Error(data?.message || 'Could not verify payment');
-        }
-      } catch (error) {
-        console.error('Error checking payment status:', error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Could not verify payment status",
-        });
-        setStatus('UNKNOWN');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkPaymentStatus();
-  }, [merchantTransactionId, user, clearCart]);
+    if (status === 'success') {
+      clearCart();
+    }
+  }, [status, clearCart]);
 
   const getStatusDisplay = () => {
     if (isLoading) {
       return (
         <div className="flex flex-col items-center py-8">
           <Clock className="w-16 h-16 text-muted-foreground animate-pulse mb-4" />
-          <h2 className="text-2xl font-medium mb-2">Verifying Payment</h2>
+          <h2 className="text-2xl font-medium mb-2">Processing</h2>
           <p className="text-muted-foreground text-center">
-            Please wait while we verify your payment...
+            Please wait while we process your payment...
           </p>
         </div>
       );
     }
 
-    if (status === 'COMPLETED') {
+    if (status === 'success') {
       return (
         <div className="flex flex-col items-center py-8">
           <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
@@ -116,10 +65,7 @@ const PaymentResult = () => {
         </div>
         <h2 className="text-2xl font-medium mb-2">Payment Failed</h2>
         <p className="text-muted-foreground text-center mb-6">
-          {status === 'PAYMENT_DECLINED' 
-            ? 'Your payment was declined. Please try again with a different payment method.'
-            : 'There was an issue processing your payment. Please try again.'
-          }
+          There was an issue processing your payment. Please try again.
         </p>
         <div className="flex flex-col sm:flex-row gap-4">
           <Button onClick={() => navigate('/checkout')}>
@@ -141,20 +87,15 @@ const PaymentResult = () => {
         </CardContent>
       </Card>
 
-      {status === 'COMPLETED' && (
+      {status === 'success' && orderId && (
         <div className="mt-8">
-          <h3 className="text-lg font-medium mb-4">Payment Details</h3>
+          <h3 className="text-lg font-medium mb-4">Order Details</h3>
           <Card>
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Transaction ID:</span>
-                  <span>{transactionId || 'N/A'}</span>
-                </div>
-                <Separator />
-                <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Order ID:</span>
-                  <span>{merchantTransactionId || 'N/A'}</span>
+                  <span>{orderId}</span>
                 </div>
               </div>
             </CardContent>
