@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { ShoppingBag, Menu, X, Search, Shirt, Home as HomeIcon, Bell, Heart, Backpack } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ShoppingBag, Menu, X, Search, Bell, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
 import { useNotifications } from '@/context/NotificationContext';
@@ -10,6 +10,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Input } from '@/components/ui/input';
 import NotificationPanel from '@/components/notifications/NotificationPanel';
 import WishlistPanel from '@/components/wishlist/WishlistPanel';
+import MainNav from './MainNav';
+import AuthNav from './AuthNav';
 
 const Navbar = () => {
   const { totalItems, setIsCartOpen } = useCart();
@@ -18,7 +20,6 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
-  const location = useLocation();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -30,27 +31,6 @@ const Navbar = () => {
       navigate(`/?search=${encodeURIComponent(searchQuery.trim())}`);
       setIsMobileMenuOpen(false);
     }
-  };
-
-  const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'T-Shirts', path: '/?category=tshirts', icon: Shirt },
-    { name: 'Shirts', path: '/?category=shirts', icon: Shirt },
-    { name: 'Jeans', path: '/?category=jeans' },
-    { name: 'Bags', path: '/?category=bags', icon: Backpack },
-    { name: 'Accessories', path: '/?category=accessories' },
-  ];
-
-  const isLinkActive = (path: string) => {
-    const queryParams = new URLSearchParams(location.search);
-    const categoryParam = queryParams.get('category');
-    
-    if (path === '/') return location.pathname === '/' && !categoryParam;
-    if (path.includes('category=')) {
-      const linkCategory = path.split('=')[1];
-      return categoryParam === linkCategory;
-    }
-    return location.pathname === path;
   };
 
   return (
@@ -71,21 +51,9 @@ const Navbar = () => {
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex md:gap-6">
-          {navLinks.map((link) => (
-            <Link
-              key={link.name + link.path}
-              to={link.path}
-              className={`text-sm font-medium transition-colors ${
-                isLinkActive(link.path) 
-                ? "text-primary font-semibold" 
-                : "hover:text-primary/80"
-              }`}
-            >
-              {link.name}
-            </Link>
-          ))}
-        </nav>
+        <div className="hidden md:block">
+          <MainNav />
+        </div>
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
@@ -102,20 +70,69 @@ const Navbar = () => {
                   <Button type="submit">Search</Button>
                 </div>
               </form>
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name + link.path}
-                  to={link.path}
-                  className={`text-base font-medium transition-colors ${
-                    isLinkActive(link.path) 
-                    ? "text-primary font-semibold" 
-                    : "hover:text-primary/80"
-                  }`}
-                  onClick={toggleMobileMenu}
-                >
-                  {link.name}
-                </Link>
-              ))}
+              <Link
+                to="/"
+                className="text-base font-medium"
+                onClick={toggleMobileMenu}
+              >
+                Home
+              </Link>
+              <Link
+                to="/?category=tshirts"
+                className="text-base font-medium"
+                onClick={toggleMobileMenu}
+              >
+                T-Shirts
+              </Link>
+              <Link
+                to="/?category=shirts"
+                className="text-base font-medium"
+                onClick={toggleMobileMenu}
+              >
+                Shirts
+              </Link>
+              <Link
+                to="/?category=jeans"
+                className="text-base font-medium"
+                onClick={toggleMobileMenu}
+              >
+                Jeans
+              </Link>
+              <Link
+                to="/?category=bags"
+                className="text-base font-medium"
+                onClick={toggleMobileMenu}
+              >
+                Bags
+              </Link>
+              <Link
+                to="/?category=accessories"
+                className="text-base font-medium"
+                onClick={toggleMobileMenu}
+              >
+                Accessories
+              </Link>
+              <Link
+                to="/orders"
+                className="text-base font-medium"
+                onClick={toggleMobileMenu}
+              >
+                Orders
+              </Link>
+              <Link
+                to="/profile"
+                className="text-base font-medium"
+                onClick={toggleMobileMenu}
+              >
+                Profile
+              </Link>
+              <Link
+                to="/sign-in"
+                className="text-base font-medium"
+                onClick={toggleMobileMenu}
+              >
+                Sign In
+              </Link>
             </div>
           </div>
         )}
