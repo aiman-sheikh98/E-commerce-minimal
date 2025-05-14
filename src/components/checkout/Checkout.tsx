@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
@@ -24,102 +25,67 @@ const Checkout = ({ shippingAddress, total, onSuccess }: CheckoutProps) => {
   const { items, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [orderId, setOrderId] = useState<string | null>(null);
-  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-
-  useEffect(() => {
-    const createOrder = async () => {
-      setIsCreatingOrder(true);
-      
-      try {
-        // Check if user is authenticated
-        if (!user) {
-          toast({
-            variant: "destructive",
-            title: "Authentication Required",
-            description: "Please sign in to complete your order",
-          });
-          navigate('/sign-in?redirect=checkout');
-          return;
-        }
-        
-        // Create the order in the database
-        const { data: orderData, error: orderError } = await supabase
-          .from('orders')
-          .insert({
-            user_id: user.id,
-            amount: total,
-            shipping_address: shippingAddress,
-            status: 'pending'
-          })
-          .select()
-          .single();
-        
-        if (orderError) throw orderError;
-        
-        // Insert order items
-        const orderItems = items.map(item => ({
-          order_id: orderData.id,
-          product_id: item.product.id,
-          product_name: item.product.name,
-          product_image: item.product.images[0],
-          price: item.product.price,
-          quantity: item.quantity,
-          color: item.color,
-          size: item.size
-        }));
-        
-        const { error: itemsError } = await supabase
-          .from('order_items')
-          .insert(orderItems);
-        
-        if (itemsError) throw itemsError;
-        
-        setOrderId(orderData.id);
-        
-      } catch (error) {
-        console.error('Error creating order:', error);
-        toast({
-          variant: "destructive",
-          title: "Order Creation Failed",
-          description: error.message || "There was a problem creating your order",
-        });
-      } finally {
-        setIsCreatingOrder(false);
-      }
-    };
-    
-    if (!orderId && shippingAddress && total > 0) {
-      createOrder();
-    }
-  }, [shippingAddress, total, items, navigate, orderId, user]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handlePlaceOrder = async () => {
-    setIsProcessingPayment(true);
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Authentication Required",
+        description: "Please sign in to complete your order",
+      });
+      navigate('/sign-in?redirect=checkout');
+      return;
+    }
+
+    if (!shippingAddress.name || !shippingAddress.street || !shippingAddress.city || 
+        !shippingAddress.state || !shippingAddress.zip || !shippingAddress.country) {
+      toast({
+        variant: "destructive",
+        title: "Incomplete Address",
+        description: "Please fill in all required address fields",
+      });
+      return;
+    }
+
+    setIsLoading(true);
     
     try {
-      // This is a placeholder for future payment integration
-      // We'll replace this with actual payment processing later
+      // Calculate actual subtotal from cart items
+      const subtotal = items.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+      const tax = subtotal * 0.1; // 10% tax
+      const calculatedTotal = subtotal + tax;
       
-      toast({
-        title: "Order Placed",
-        description: "Your order has been placed successfully.",
+      // Call the Stripe checkout function
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: { 
+          items, 
+          shippingAddress,
+          userId: user.id,
+          total: calculatedTotal
+        }
       });
-      
-      clearCart();
-      onSuccess?.();
-      navigate('/payment-result?status=success');
+
+      if (error) throw new Error(error.message);
+
+      if (data?.url) {
+        // Clear the cart after successful order creation
+        clearCart();
+        
+        // Redirect to Stripe checkout
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
       
     } catch (error) {
       console.error('Payment error:', error);
       toast({
         variant: "destructive",
         title: "Payment Error",
-        description: "There was a problem processing your payment.",
+        description: error.message || "There was a problem processing your payment.",
       });
-    } finally {
-      setIsProcessingPayment(false);
+      setIsLoading(false);
     }
   };
 
@@ -127,31 +93,23 @@ const Checkout = ({ shippingAddress, total, onSuccess }: CheckoutProps) => {
     <div className="space-y-4 mt-6">
       <h3 className="text-lg font-medium">Complete Payment</h3>
       
-      {orderId ? (
-        <Button 
-          className="w-full"
-          onClick={handlePlaceOrder}
-          disabled={isCreatingOrder || isProcessingPayment}
-        >
-          {isProcessingPayment ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Processing...
-            </>
-          ) : (
-            'Place Order'
-          )}
-        </Button>
-      ) : (
-        <div className="text-center p-4">
-          <p className="text-sm text-muted-foreground">
-            {isCreatingOrder ? 'Creating your order...' : 'Waiting for order details...'}
-          </p>
-        </div>
-      )}
+      <Button 
+        className="w-full"
+        onClick={handlePlaceOrder}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Processing...
+          </>
+        ) : (
+          'Place Order'
+        )}
+      </Button>
       
       <p className="text-sm text-muted-foreground text-center mt-2">
-        Payment options will be available soon.
+        You will be redirected to Stripe to complete your payment.
       </p>
     </div>
   );

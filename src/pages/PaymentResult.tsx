@@ -8,20 +8,55 @@ import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/use-toast';
 import { useCart } from '@/context/CartContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const PaymentResult = () => {
   const [searchParams] = useSearchParams();
   const status = searchParams.get('status');
   const orderId = searchParams.get('orderId');
   const [isLoading, setIsLoading] = useState(false);
+  const [orderDetails, setOrderDetails] = useState<any>(null);
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { clearCart } = useCart();
 
   useEffect(() => {
-    if (status === 'success') {
+    if (status === 'success' && orderId) {
       clearCart();
+      fetchOrderDetails(orderId);
     }
-  }, [status, clearCart]);
+  }, [status, orderId, clearCart]);
+
+  const fetchOrderDetails = async (id: string) => {
+    setIsLoading(true);
+    try {
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .select('*, items:order_items(*)')
+        .eq('id', id)
+        .single();
+
+      if (orderError) throw orderError;
+      setOrderDetails(order);
+
+      // Update order status to processing if it was pending
+      if (order.status === 'pending') {
+        await supabase
+          .from('orders')
+          .update({ status: 'processing' })
+          .eq('id', id);
+      }
+    } catch (error) {
+      console.error('Error fetching order details:', error);
+      toast({
+        variant: "destructive",
+        title: "Error fetching order details",
+        description: "There was a problem loading your order information.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const getStatusDisplay = () => {
     if (isLoading) {
@@ -87,7 +122,7 @@ const PaymentResult = () => {
         </CardContent>
       </Card>
 
-      {status === 'success' && orderId && (
+      {status === 'success' && orderId && orderDetails && (
         <div className="mt-8">
           <h3 className="text-lg font-medium mb-4">Order Details</h3>
           <Card>
@@ -96,6 +131,25 @@ const PaymentResult = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Order ID:</span>
                   <span>{orderId}</span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Date:</span>
+                  <span>{new Date(orderDetails.created_at).toLocaleString()}</span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Status:</span>
+                  <span className="capitalize">
+                    {orderDetails.status === 'pending' ? 'processing' : orderDetails.status}
+                  </span>
+                </div>
+                
+                <Separator />
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Total Amount:</span>
+                  <span className="font-medium">${Number(orderDetails.amount).toFixed(2)}</span>
                 </div>
               </div>
             </CardContent>

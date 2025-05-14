@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/form"
 import { toast } from '@/components/ui/use-toast';
 import Checkout from './Checkout';
+import { useCart } from '@/context/CartContext';
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -43,6 +44,7 @@ interface CheckoutFormProps {
 
 const CheckoutForm = ({ onSuccess }: CheckoutFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { subtotal } = useCart();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -56,26 +58,8 @@ const CheckoutForm = ({ onSuccess }: CheckoutFormProps) => {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsSubmitting(true);
-    try {
-      // Simulate a successful submission
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      toast({
-        title: "Success!",
-        description: "Your order has been placed.",
-      });
-      onSuccess?.();
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Uh oh! Something went wrong.",
-        description: error.message,
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const tax = subtotal * 0.1; // 10% tax
+  const total = subtotal + tax;
 
   return (
     <Form {...form}>
@@ -171,7 +155,7 @@ const CheckoutForm = ({ onSuccess }: CheckoutFormProps) => {
             zip: form.getValues("zip"),
             country: form.getValues("country"),
           }}
-          total={100} // Replace with actual total from cart
+          total={total}
           onSuccess={onSuccess}
         />
       </form>
