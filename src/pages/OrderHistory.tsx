@@ -57,7 +57,8 @@ const OrderHistory = () => {
         description: '',
         category: '',
         colors: [],
-        sizes: []
+        sizes: [],
+        featured: false // Add the missing featured property
       }, item.quantity, item.color || '', item.size || '');
     });
     
@@ -177,7 +178,8 @@ const OrderHistory = () => {
                 description: '',
                 category: '',
                 colors: [],
-                sizes: []
+                sizes: [],
+                featured: false // Add the missing featured property
               },
               quantity: item.quantity,
               color: item.color || '',
