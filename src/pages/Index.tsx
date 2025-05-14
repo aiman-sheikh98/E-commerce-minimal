@@ -5,6 +5,7 @@ import { products } from '@/data/products';
 import ProductGrid from '@/components/products/ProductGrid';
 import ProductFilters from '@/components/products/ProductFilters';
 import HeroBanner from '@/components/home/HeroBanner';
+import NewArrivalsSection from '@/components/home/NewArrivalsSection';
 import { DemoNotification } from '@/components/notifications/DemoNotification';
 
 const Index = () => {
@@ -27,10 +28,12 @@ const Index = () => {
   };
 
   const featuredProducts = products.filter(product => product.featured);
+  const newArrivals = products.filter(product => product.isNewArrival);
 
   // Get category name for display
   const getCategoryDisplayName = () => {
     if (!categoryParam || categoryParam === 'all') return '';
+    if (categoryParam === 'new-arrivals') return 'New Arrivals';
     const category = categoryParam.charAt(0).toUpperCase() + categoryParam.slice(1);
     return category;
   };
@@ -38,7 +41,7 @@ const Index = () => {
   return (
     <div>
       <DemoNotification />
-      {!searchQuery && <HeroBanner />}
+      {!searchQuery && categoryParam !== 'new-arrivals' && <HeroBanner />}
       
       <div className="container py-8 md:py-12">
         {searchQuery && (
@@ -52,7 +55,21 @@ const Index = () => {
           </div>
         )}
         
-        {categoryParam && categoryParam !== 'all' && !searchQuery && (
+        {categoryParam === 'new-arrivals' && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-medium mb-6">New Arrivals</h2>
+            <p className="text-muted-foreground mb-8 max-w-2xl">
+              Discover our latest products, fresh in stock and ready to elevate your everyday essentials.
+              Explore the newest additions to our collection.
+            </p>
+            <ProductGrid 
+              products={newArrivals.length ? newArrivals : products.slice(0, 8)} 
+              category="all"
+            />
+          </div>
+        )}
+        
+        {categoryParam && categoryParam !== 'all' && categoryParam !== 'new-arrivals' && !searchQuery && (
           <div className="mb-8">
             <h2 className="text-2xl font-medium mb-2">{getCategoryDisplayName()}</h2>
             <ProductGrid 
@@ -70,6 +87,8 @@ const Index = () => {
                 Beautifully crafted products for your everyday life. Simple, functional, and built to last.
               </p>
             </div>
+            
+            <NewArrivalsSection products={newArrivals.length ? newArrivals : products.slice(0, 4)} />
             
             <section className="mb-16">
               <div className="mb-6 flex items-center justify-between">

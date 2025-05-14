@@ -13,7 +13,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import Checkout from './Checkout';
 import { useCart } from '@/context/CartContext';
 
@@ -45,6 +45,8 @@ interface CheckoutFormProps {
 const CheckoutForm = ({ onSuccess }: CheckoutFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { subtotal } = useCart();
+  const tax = subtotal * 0.1; // 10% tax
+  const total = subtotal + tax;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -58,8 +60,15 @@ const CheckoutForm = ({ onSuccess }: CheckoutFormProps) => {
     },
   });
 
-  const tax = subtotal * 0.1; // 10% tax
-  const total = subtotal + tax;
+  // Watch form values to pass to checkout component
+  const watchedValues = {
+    name: form.watch("name"),
+    street: form.watch("address"),
+    city: form.watch("city"),
+    state: form.watch("state"),
+    zip: form.watch("zip"),
+    country: form.watch("country"),
+  };
 
   return (
     <Form {...form}>
@@ -147,14 +156,7 @@ const CheckoutForm = ({ onSuccess }: CheckoutFormProps) => {
           )}
         />
         <Checkout 
-          shippingAddress={{
-            name: form.getValues("name"),
-            street: form.getValues("address"),
-            city: form.getValues("city"),
-            state: form.getValues("state"),
-            zip: form.getValues("zip"),
-            country: form.getValues("country"),
-          }}
+          shippingAddress={watchedValues}
           total={total}
           onSuccess={onSuccess}
         />

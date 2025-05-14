@@ -43,18 +43,20 @@ const PaymentResult = () => {
   }, [status, orderId, clearCart]);
 
   const fetchOrderDetails = async (id: string) => {
+    if (!id) return;
+    
     setIsLoading(true);
     try {
       const { data: order, error: orderError } = await supabase
         .from('orders')
-        .select('*, items:order_items(*)')
+        .select('*, order_items(*)')
         .eq('id', id)
         .single();
 
       if (orderError) throw orderError;
-      setOrderDetails(order);
-
+      
       console.log("Fetched order details:", order); // Debug log
+      setOrderDetails(order);
 
       // Update order status to processing if it was pending
       if (order && order.status === 'pending') {

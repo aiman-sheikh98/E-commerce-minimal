@@ -8,6 +8,7 @@ export interface Product {
   colors: string[];
   sizes: string[];
   featured: boolean;
+  isNewArrival?: boolean;
 }
 
 export const products: Product[] = [
@@ -276,11 +277,87 @@ export const products: Product[] = [
     colors: ["Vintage Blue", "Medium Blue", "Light Wash"],
     sizes: ["24", "26", "28", "30", "32"],
     featured: true,
+  },
+  {
+    id: "20",
+    name: "Eco-Friendly Water Bottle",
+    price: 29.99,
+    description: "Sustainable stainless steel water bottle that keeps drinks cold for 24 hours or hot for 12 hours. Features a leak-proof design.",
+    category: "accessories",
+    images: [
+      "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&q=80&w=500",
+      "https://images.unsplash.com/photo-1578269294747-ba0f24d6c288?auto=format&fit=crop&q=80&w=500"
+    ],
+    colors: ["Silver", "Black", "Blue"],
+    sizes: ["16oz", "24oz"],
+    featured: false,
+    isNewArrival: true
+  },
+  {
+    id: "21",
+    name: "Organic Cotton Hoodie",
+    price: 85,
+    description: "Premium organic cotton hoodie with minimalist design. Features a comfortable relaxed fit with kangaroo pocket.",
+    category: "clothing",
+    images: [
+      "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&q=80&w=500",
+      "https://images.unsplash.com/photo-1611811236467-5b1244d5abb9?auto=format&fit=crop&q=80&w=500" 
+    ],
+    colors: ["Charcoal", "Cream", "Sage"],
+    sizes: ["S", "M", "L", "XL"],
+    featured: false,
+    isNewArrival: true
+  },
+  {
+    id: "22",
+    name: "Handcrafted Ceramic Planter",
+    price: 42,
+    description: "Beautiful handmade ceramic plant pot with minimalist design. Perfect for small to medium-sized houseplants.",
+    category: "home",
+    images: [
+      "https://images.unsplash.com/photo-1623910270900-3e9790148e5a?auto=format&fit=crop&q=80&w=500",
+      "https://images.unsplash.com/photo-1594534475808-b18fc33b045e?auto=format&fit=crop&q=80&w=500"
+    ],
+    colors: ["White", "Terracotta", "Black"],
+    sizes: ["Small", "Medium"],
+    featured: false,
+    isNewArrival: true
+  },
+  {
+    id: "23",
+    name: "Vegan Leather Crossbody Bag",
+    price: 65,
+    description: "Stylish vegan leather crossbody bag with adjustable strap. Features multiple compartments for organization.",
+    category: "bags",
+    images: [
+      "https://images.unsplash.com/photo-1598532163257-ae3c6b2524b6?auto=format&fit=crop&q=80&w=500",
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&q=80&w=500"
+    ],
+    colors: ["Tan", "Black", "Burgundy"],
+    sizes: ["One Size"],
+    featured: false,
+    isNewArrival: true
+  },
+  {
+    id: "24",
+    name: "Bamboo Sunglasses",
+    price: 79,
+    description: "Eco-friendly bamboo sunglasses with polarized lenses. Lightweight and durable with UV protection.",
+    category: "accessories",
+    images: [
+      "https://images.unsplash.com/photo-1577803645773-f96470509666?auto=format&fit=crop&q=80&w=500",
+      "https://images.unsplash.com/photo-1582142306909-195724d33ffc?auto=format&fit=crop&q=80&w=500"
+    ],
+    colors: ["Natural", "Dark Brown"],
+    sizes: ["One Size"],
+    featured: false,
+    isNewArrival: true
   }
 ];
 
 export const categories = [
   { name: "All", value: "all" },
+  { name: "New Arrivals", value: "new-arrivals" },
   { name: "T-Shirts", value: "tshirts" },
   { name: "Shirts", value: "shirts" },
   { name: "Jeans", value: "jeans" },
