@@ -2,6 +2,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, LogOut, Package, Settings } from 'lucide-react';
+import { UserRound, LogOut, Package, Settings } from 'lucide-react';
 
 const AuthNav = () => {
   const { user, profile, signOut } = useAuth();
@@ -28,11 +29,22 @@ const AuthNav = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="flex items-center gap-2">
-          <User size={16} />
-          <span className="hidden md:inline-block">
-            {profile?.full_name || 'Account'}
-          </span>
+        <Button variant="ghost" size="sm" className="flex items-center gap-2 rounded-full bg-accent/20 hover:bg-accent/40">
+          {profile?.avatar_url ? (
+            <Avatar className="h-8 w-8 border-2 border-primary/10">
+              <AvatarImage src={profile.avatar_url} alt={profile.full_name || user.email} />
+              <AvatarFallback className="bg-primary/90 text-primary-foreground">
+                {profile?.full_name?.charAt(0) || user.email?.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+          ) : (
+            <>
+              <UserRound size={18} />
+              <span className="hidden md:inline-block">
+                {profile?.full_name || 'Account'}
+              </span>
+            </>
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">

@@ -1,22 +1,24 @@
 
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Menu, X, Search, Bell, Heart } from 'lucide-react';
+import { ShoppingBag, Menu, X, Search, Bell, Heart, UserRound, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
 import { useNotifications } from '@/context/NotificationContext';
 import { useWishlist } from '@/context/WishlistContext';
+import { useAuth } from '@/context/AuthContext';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import NotificationPanel from '@/components/notifications/NotificationPanel';
 import WishlistPanel from '@/components/wishlist/WishlistPanel';
 import MainNav from './MainNav';
-import AuthNav from './AuthNav';
 
 const Navbar = () => {
   const { totalItems, setIsCartOpen } = useCart();
   const { unreadCount } = useNotifications();
   const { totalItems: wishlistItems } = useWishlist();
+  const { user, profile, signOut } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
@@ -206,6 +208,70 @@ const Navbar = () => {
               </span>
             )}
           </Button>
+
+          {/* User Profile Popover */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="rounded-full bg-accent/20 hover:bg-accent/40"
+              >
+                {user && profile?.avatar_url ? (
+                  <Avatar className="h-8 w-8 border-2 border-primary/10">
+                    <AvatarImage src={profile.avatar_url} alt={profile.full_name || user.email} />
+                    <AvatarFallback className="bg-primary/90 text-primary-foreground">
+                      {profile?.full_name?.charAt(0) || user.email?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <UserRound size={22} className="text-primary" />
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 p-3" align="end">
+              {user ? (
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-3 pb-2 mb-2 border-b">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={profile?.avatar_url} alt={profile?.full_name || user.email} />
+                      <AvatarFallback className="bg-primary/90 text-primary-foreground">
+                        {profile?.full_name?.charAt(0) || user.email?.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-medium">{profile?.full_name || 'User'}</p>
+                      <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                    </div>
+                  </div>
+                  <Link to="/profile" className="flex items-center gap-2 py-2 px-3 text-sm rounded-md hover:bg-accent">
+                    <UserRound size={16} />
+                    <span>Your Profile</span>
+                  </Link>
+                  <Link to="/orders" className="flex items-center gap-2 py-2 px-3 text-sm rounded-md hover:bg-accent">
+                    <ShoppingBag size={16} />
+                    <span>Your Orders</span>
+                  </Link>
+                  <button 
+                    onClick={() => signOut()}
+                    className="flex items-center gap-2 py-2 px-3 mt-2 text-sm rounded-md hover:bg-accent text-left"
+                  >
+                    <LogOut size={16} />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <Link
+                    to="/sign-in"
+                    className="w-full py-2 flex justify-center bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
     </header>

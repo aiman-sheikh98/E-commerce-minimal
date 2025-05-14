@@ -2,9 +2,7 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-  NavigationMenu,
+import { NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuLink,
@@ -13,10 +11,9 @@ import {
   navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
 import { cn } from '@/lib/utils';
-import { User, LogOut } from 'lucide-react';
 
 const MainNav = () => {
-  const { user, profile, signOut } = useAuth();
+  const { user } = useAuth();
   
   return (
     <NavigationMenu>
@@ -57,61 +54,6 @@ const MainNav = () => {
           <Link to="/orders" className={navigationMenuTriggerStyle()}>
             Orders
           </Link>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
-          {user ? (
-            <NavigationMenuTrigger>
-              <div className="flex items-center gap-2">
-                <Avatar className="h-6 w-6">
-                  <AvatarImage src={profile?.avatar_url} alt={profile?.full_name || user.email} />
-                  <AvatarFallback>
-                    {profile?.full_name?.charAt(0) || user.email?.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="hidden md:inline">
-                  {profile?.full_name || user.email?.split('@')[0]}
-                </span>
-              </div>
-            </NavigationMenuTrigger>
-          ) : (
-            <Link to="/sign-in" className={navigationMenuTriggerStyle()}>
-              <User size={18} className="mr-2" />
-              <span>Sign In</span>
-            </Link>
-          )}
-          
-          {user && (
-            <NavigationMenuContent>
-              <ul className="w-56 p-2">
-                <li>
-                  <Link 
-                    to="/profile" 
-                    className="block w-full p-2 hover:bg-accent rounded-md text-sm"
-                  >
-                    Profile
-                  </Link>
-                </li>
-                <li>
-                  <Link 
-                    to="/orders" 
-                    className="block w-full p-2 hover:bg-accent rounded-md text-sm"
-                  >
-                    Orders
-                  </Link>
-                </li>
-                <li className="mt-2 pt-2 border-t">
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-start p-2 h-9 text-sm" 
-                    onClick={() => signOut()}
-                  >
-                    <LogOut size={16} className="mr-2" />
-                    Sign Out
-                  </Button>
-                </li>
-              </ul>
-            </NavigationMenuContent>
-          )}
         </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>
