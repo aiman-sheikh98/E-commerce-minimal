@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -57,6 +57,8 @@ const Checkout = ({ shippingAddress, total, onSuccess }: CheckoutProps) => {
       const tax = subtotal * 0.1; // 10% tax
       const calculatedTotal = subtotal + tax;
       
+      console.log("Creating payment with:", { items, shippingAddress, userId: user.id, total: calculatedTotal });
+      
       // Call the Stripe checkout function
       const { data, error } = await supabase.functions.invoke('create-payment', {
         body: { 
@@ -68,11 +70,9 @@ const Checkout = ({ shippingAddress, total, onSuccess }: CheckoutProps) => {
       });
 
       if (error) throw new Error(error.message);
+      console.log("Payment response:", data);
 
       if (data?.url) {
-        // Clear the cart after successful order creation
-        clearCart();
-        
         // Redirect to Stripe checkout
         window.location.href = data.url;
       } else {

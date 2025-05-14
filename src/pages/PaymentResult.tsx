@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/context/AuthContext';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { useCart } from '@/context/CartContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -54,12 +54,20 @@ const PaymentResult = () => {
       if (orderError) throw orderError;
       setOrderDetails(order);
 
+      console.log("Fetched order details:", order); // Debug log
+
       // Update order status to processing if it was pending
-      if (order.status === 'pending') {
-        await supabase
+      if (order && order.status === 'pending') {
+        const { error: updateError } = await supabase
           .from('orders')
           .update({ status: 'processing' })
           .eq('id', id);
+          
+        if (updateError) {
+          console.error("Error updating order status:", updateError);
+        } else {
+          console.log("Updated order status to processing");
+        }
       }
     } catch (error) {
       console.error('Error fetching order details:', error);

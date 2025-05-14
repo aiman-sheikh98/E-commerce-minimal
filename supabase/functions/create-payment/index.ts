@@ -15,7 +15,8 @@ serve(async (req) => {
   }
 
   try {
-    const { items, shippingAddress, userId } = await req.json();
+    const { items, shippingAddress, userId, total } = await req.json();
+    console.log("Received payment request:", { items, shippingAddress, userId, total });
     
     // Initialize Stripe with the secret key from env
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
@@ -39,7 +40,9 @@ serve(async (req) => {
     const subtotal = items.reduce((total: number, item: any) => 
       total + (item.product.price * item.quantity), 0);
     const tax = subtotal * 0.1; // 10% tax
-    const total = subtotal + tax;
+    const totalAmount = subtotal + tax;
+
+    console.log("Calculated total:", totalAmount);
 
     // Create Supabase client
     const supabaseAdmin = createClient(
@@ -53,7 +56,7 @@ serve(async (req) => {
       .from('orders')
       .insert({
         user_id: userId,
-        amount: total,
+        amount: totalAmount,
         shipping_address: shippingAddress,
         status: 'pending'
       })
@@ -61,8 +64,11 @@ serve(async (req) => {
       .single();
 
     if (orderError) {
+      console.error("Order creation error:", orderError);
       throw new Error(`Order creation failed: ${orderError.message}`);
     }
+
+    console.log("Created order:", order);
 
     // Insert order items
     const orderItems = items.map((item: any) => ({
@@ -81,8 +87,11 @@ serve(async (req) => {
       .insert(orderItems);
 
     if (itemsError) {
+      console.error("Order items creation error:", itemsError);
       throw new Error(`Order items creation failed: ${itemsError.message}`);
     }
+
+    console.log("Added order items successfully");
 
     // Get origin for success/cancel URLs
     const origin = req.headers.get("origin") || "http://localhost:5173";
@@ -100,17 +109,22 @@ serve(async (req) => {
       }
     });
 
+    console.log("Created checkout session:", session.id);
+
     // Update order with payment ID
     await supabaseAdmin
       .from('orders')
       .update({ payment_id: session.id })
       .eq('id', order.id);
 
+    console.log("Updated order with payment ID");
+
     return new Response(JSON.stringify({ url: session.url, orderId: order.id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
+    console.error("Payment processing error:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
