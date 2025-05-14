@@ -15,72 +15,84 @@ serve(async (req) => {
   }
 
   try {
-    const { orderId } = await req.json();
+    const { orderId, userId } = await req.json();
     
-    // Create Supabase client with service role key
-    const supabaseAdmin = createClient(
+    if (!orderId) {
+      throw new Error("Order ID is required");
+    }
+    
+    if (!userId) {
+      throw new Error("User ID is required");
+    }
+
+    // Create Supabase client with service role key to bypass RLS
+    const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { persistSession: false } }
     );
-    
-    // Get the order details
-    const { data: order, error: orderError } = await supabaseAdmin
+
+    // Fetch order details to verify ownership and get payment ID
+    const { data: order, error: orderError } = await supabase
       .from('orders')
       .select('*')
       .eq('id', orderId)
+      .eq('user_id', userId)
       .single();
-      
+
     if (orderError || !order) {
-      throw new Error(`Order not found: ${orderError?.message || 'Unknown error'}`);
+      throw new Error(`Order not found or you don't have permission to cancel it`);
     }
 
-    // If the order has a payment_id and is not already cancelled
-    if (order.payment_id && order.status !== 'cancelled') {
-      // Initialize Stripe with the secret key
-      const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-        apiVersion: "2023-10-16",
-      });
+    // Check if the order is in a cancellable state
+    if (order.status !== 'pending' && order.status !== 'processing') {
+      throw new Error(`Cannot cancel order with status: ${order.status}`);
+    }
+
+    // Initialize Stripe
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+      apiVersion: "2023-10-16",
+    });
+
+    // If there's a payment ID, attempt to refund through Stripe
+    if (order.payment_id) {
+      // Get payment intent from the session
+      const session = await stripe.checkout.sessions.retrieve(order.payment_id);
       
-      try {
-        // If this is a Stripe Checkout session, we should try to refund it
-        // Note: This is a simplified example. In production, you might have different refund logic.
+      if (session.payment_intent) {
+        // Attempt to refund the payment
         await stripe.refunds.create({
-          payment_intent: order.payment_id,
+          payment_intent: session.payment_intent.toString(),
         });
-      } catch (stripeError) {
-        // If the refund fails, we should still cancel the order in our system
-        console.error("Stripe refund failed:", stripeError);
       }
     }
 
-    // Update the order status to cancelled
-    const { error: updateError } = await supabaseAdmin
+    // Update order status to cancelled
+    const { error: updateError } = await supabase
       .from('orders')
-      .update({ status: 'cancelled' })
+      .update({ status: 'cancelled', updated_at: new Date().toISOString() })
       .eq('id', orderId);
 
     if (updateError) {
-      throw new Error(`Failed to update order: ${updateError.message}`);
+      throw new Error(`Failed to update order status: ${updateError.message}`);
     }
 
-    return new Response(
-      JSON.stringify({ success: true, message: "Order cancelled successfully" }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      }
-    );
+    return new Response(JSON.stringify({ 
+      success: true, 
+      message: "Order cancelled successfully" 
+    }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200,
+    });
   } catch (error) {
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message || "Failed to cancel order" 
-      }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500,
-      }
-    );
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: errorMessage 
+    }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500,
+    });
   }
 });

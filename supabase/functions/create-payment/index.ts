@@ -84,13 +84,16 @@ serve(async (req) => {
       throw new Error(`Order items creation failed: ${itemsError.message}`);
     }
 
+    // Get origin for success/cancel URLs
+    const origin = req.headers.get("origin") || "http://localhost:5173";
+
     // Create a Checkout Session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/payment-result?status=success&orderId=${order.id}`,
-      cancel_url: `${req.headers.get("origin")}/payment-result?status=canceled&orderId=${order.id}`,
+      success_url: `${origin}/payment-result?status=success&orderId=${order.id}`,
+      cancel_url: `${origin}/payment-result?status=canceled&orderId=${order.id}`,
       metadata: {
         order_id: order.id,
         user_id: userId

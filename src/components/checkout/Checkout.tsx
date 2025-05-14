@@ -7,6 +7,7 @@ import { toast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { STRIPE_PUBLISHABLE_KEY } from '@/config/stripe';
 
 interface CheckoutProps {
   shippingAddress: {

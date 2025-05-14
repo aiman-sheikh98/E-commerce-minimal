@@ -9,6 +9,7 @@ import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/use-toast';
 import { useCart } from '@/context/CartContext';
 import { supabase } from '@/integrations/supabase/client';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const PaymentResult = () => {
   const [searchParams] = useSearchParams();
@@ -21,9 +22,23 @@ const PaymentResult = () => {
   const { clearCart } = useCart();
 
   useEffect(() => {
-    if (status === 'success' && orderId) {
+    // Show a toast notification when payment is successful
+    if (status === 'success') {
+      toast({
+        title: "Payment Successful",
+        description: "Your order has been placed successfully!",
+      });
       clearCart();
-      fetchOrderDetails(orderId);
+      
+      if (orderId) {
+        fetchOrderDetails(orderId);
+      }
+    } else if (status === 'canceled') {
+      toast({
+        variant: "destructive",
+        title: "Payment Canceled",
+        description: "Your payment was not completed.",
+      });
     }
   }, [status, orderId, clearCart]);
 
