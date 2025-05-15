@@ -1,4 +1,4 @@
-# Welcome to your Lovable project
+# Welcome to E- commerce " minima"  project
 
 ## Project info
 
@@ -24,13 +24,13 @@ Follow these steps:
 
 ```sh
 # Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+git clone <https://github.com/aiman-sheikh98/E-commerce-minimal>
 
 # Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+cd <Minima-Ecommerce>
 
 # Step 3: Install the necessary dependencies.
-npm i
+npm install
 
 # Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
@@ -62,7 +62,8 @@ This project is built with:
 
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/09c97a6b-5bc9-48d4-a47e-b712bfee79e3) and click on Share -> Publish.
+Simply open lite-commerce-front.lovable.app
+ and click on Share -> Publish.
 
 ## Can I connect a custom domain to my Lovable project?
 
